@@ -7,25 +7,6 @@ define sudo::directive (
   # sudo skipping file names that contain a "."
   $dname = regsubst($name, '\.', '-', 'G')
 
-  if versioncmp($sudoversion,'1.7.2') < 0 {
-
-    common::concatfilepart {$dname:
-      ensure => $ensure,
-      manage => true,
-      file => "/etc/sudoers",
-      content => $content ? {
-        ""      => undef,
-        default => $content,
-      },
-      source => $source ? {
-        ""      => undef,
-        default => $source,
-      },
-      require => Package["sudo"],
-    }
-  
-  } else {
-
     file {"/etc/sudoers.d/${dname}":
       ensure  => $ensure,
       owner   => root,
@@ -43,8 +24,6 @@ define sudo::directive (
       require => Package["sudo"],
     }
   
-  }
-
   exec {"sudo-syntax-check for file $dname":
     path => "/bin:/sbin:/usr/bin:/usr/sbin",
     command     => "visudo -c -f /etc/sudoers.d/${dname} || ( rm -f /etc/sudoers.d/${dname} && exit 1)",
